@@ -1,0 +1,7 @@
+Flask
+wheel
+Flask-Mail
+Werkzeug
+pandas
+numpy
+scikit-learn

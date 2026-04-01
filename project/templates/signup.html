@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% block title %}Sign Up — RetailAI{% endblock %}
+{% block content %}
+<div class="auth-page">
+  <div class="auth-box" id="signupBox">
+    <div class="auth-logo">
+      <div style="width:52px;height:52px;background:var(--primary);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:1.3rem;"><i class="fas fa-brain"></i></div>
+      <div style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;">Retail<span style="color:var(--cyan)">AI</span></div>
+    </div>
+    <h1 class="auth-title">Create Account</h1>
+    <p class="auth-sub">Join RetailAI and start predicting demand with AI</p>
+
+    <form id="signupForm">
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <div class="input-group">
+          <i class="fas fa-user input-icon"></i>
+          <input type="text" id="username" name="username" class="form-control" placeholder="Your store name" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <div class="input-group">
+          <i class="fas fa-envelope input-icon"></i>
+          <input type="email" id="email" name="email" class="form-control" placeholder="you@example.com" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phone Number</label>
+        <div class="input-group">
+          <i class="fas fa-phone input-icon"></i>
+          <input type="tel" id="phone" name="phone" class="form-control" placeholder="+91 9876543210" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="input-group">
+          <i class="fas fa-lock input-icon"></i>
+          <input type="password" id="password" name="password" class="form-control" placeholder="Min. 6 characters" required>
+          <span class="input-icon-right toggle-password"><i class="fas fa-eye"></i></span>
+        </div>
+        <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+        <div class="strength-text" id="strengthText"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirm Password</label>
+        <div class="input-group">
+          <i class="fas fa-lock input-icon"></i>
+          <input type="password" id="confirm_password" name="confirm_password" class="form-control" placeholder="Re-enter password" required>
+          <span class="input-icon-right toggle-password"><i class="fas fa-eye"></i></span>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary btn-full" id="signupBtn">
+        <i class="fas fa-user-plus"></i> Create Account
+      </button>
+    </form>
+
+    <div class="divider">or</div>
+    <div class="text-center text-sm text-muted">Already have an account? <a href="/login" class="text-primary fw-bold">Login</a></div>
+  </div>
+
+  <!-- OTP VERIFICATION BOX -->
+  <div class="auth-box" id="otpBox" style="display:none;">
+<div class="auth-logo">
+      <div style="width:52px;height:52px;background:var(--green);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:1.3rem;"><i class="fas fa-mobile-alt"></i></div>
+    </div>
+    <h1 class="auth-title">Verify Phone</h1>
+    <p class="auth-sub">We sent a 6-digit OTP to <strong id="otpPhoneLabel"></strong></p>
+    <p class="auth-sub" id="otpReveal" style="display:none;">Your OTP is: <strong id="otpValue"></strong></p>
+
+    <div class="otp-inputs">
+      <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
+      <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
+      <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
+      <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
+      <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
+      <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
+    </div>
+
+    <button class="btn btn-primary btn-full" id="verifyOtpBtn"><i class="fas fa-check"></i> Verify OTP</button>
+    <div class="text-center text-sm text-muted mt-4">
+      Didn't receive? <span id="resendTimer" style="color:var(--text3)">Resend in <span id="timerCount">60</span>s</span>
+      <a href="#" id="resendLink" class="text-primary fw-bold" style="display:none;">Resend OTP</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+let signupPhone = '';
+const otpInputs = document.querySelectorAll('.otp-input');
+
+document.getElementById('signupForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('signupBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending OTP...';
+  const fd = new FormData(e.target);
+  try {
+    const res = await fetch('/signup', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.success) {
+      signupPhone = data.phone;
+      showToast(data.message, 'success');
+      document.getElementById('signupBox').style.display = 'none';
+      document.getElementById('otpBox').style.display = 'block';
+      document.getElementById('otpPhoneLabel').textContent = signupPhone;
+      document.getElementById('otpValue').textContent = data.otp || '';
+      document.getElementById('otpReveal').style.display = 'block';
+      if (data.otp) {
+        otpInputs.forEach((input, idx) => { input.value = data.otp[idx] || ''; });
+      }
+      startTimer();
+      otpInputs[0].focus();
+    } else {
+      showToast(data.message, 'error');
+    }
+  } catch {
+    showToast('Something went wrong!', 'error');
+  }
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
+});
+
+// OTP inputs navigation
+otpInputs.forEach((input, idx) => {
+  input.addEventListener('input', (e) => {
+    const v = e.target.value.replace(/\D/g,'');
+    e.target.value = v;
+    if (v && idx < otpInputs.length - 1) otpInputs[idx + 1].focus();
+  });
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Backspace' && !input.value && idx > 0) otpInputs[idx - 1].focus();
+  });
+  input.addEventListener('paste', (e) => {
+    const paste = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g,'');
+    if (paste.length === 6) {
+      otpInputs.forEach((inp, i) => { inp.value = paste[i] || ''; });
+      otpInputs[5].focus();
+    }
+    e.preventDefault();
+  });
+});
+
+document.getElementById('verifyOtpBtn').addEventListener('click', async () => {
+  const otp = Array.from(otpInputs).map(i => i.value).join('');
+  if (otp.length !== 6) { showToast('Enter the 6-digit OTP!', 'warning'); return; }
+  const btn = document.getElementById('verifyOtpBtn');
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
+  try {
+    const res = await fetch('/verify-otp', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({phone: signupPhone, otp}) });
+    const data = await res.json();
+    if (data.success) {
+      showToast(data.message, 'success');
+      setTimeout(() => window.location.href = '/login', 1500);
+    } else {
+      showToast(data.message, 'error');
+      otpInputs.forEach(i => { i.value=''; i.style.borderColor='var(--red)'; });
+      setTimeout(() => otpInputs.forEach(i => i.style.borderColor = ''), 1500);
+      otpInputs[0].focus();
+    }
+  } catch { showToast('Something went wrong!', 'error'); }
+  btn.disabled = false; btn.innerHTML = '<i class="fas fa-check"></i> Verify OTP';
+});
+
+// Timer
+function startTimer() {
+  let t = 60;
+  const interval = setInterval(() => {
+    document.getElementById('timerCount').textContent = --t;
+    if (t <= 0) {
+      clearInterval(interval);
+      document.getElementById('resendTimer').style.display = 'none';
+      document.getElementById('resendLink').style.display = 'inline';
+    }
+  }, 1000);
+}
+document.getElementById('resendLink')?.addEventListener('click', async (e) => {
+  e.preventDefault();
+  showToast('Resending OTP...', 'info');
+  document.getElementById('resendLink').style.display = 'none';
+  document.getElementById('resendTimer').style.display = 'inline';
+  startTimer();
+});
+</script>
+{% endblock %}

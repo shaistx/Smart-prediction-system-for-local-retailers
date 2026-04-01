@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}RetailAI — Supply & Demand Prediction{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+{% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar" id="navbar">
+  <div class="nav-container">
+    <a href="/" class="nav-logo">
+      <span class="logo-icon"><i class="fas fa-brain"></i></span>
+      <span>Retail<span class="logo-accent">AI</span></span>
+    </a>
+    <div class="nav-menu" id="navMenu">
+      <a href="/" class="nav-link {% if request.endpoint == 'home' %}active{% endif %}">Home</a>
+      {% if not session.get('user_id') %}
+      <a href="/about" class="nav-link {% if request.endpoint == 'about' %}active{% endif %}">About</a>
+      <a href="/contact" class="nav-link {% if request.endpoint == 'contact' %}active{% endif %}">Contact</a>
+      {% endif %}
+      {% if session.get('user_id') %}
+      <a href="/dashboard" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">Dashboard</a>
+      <a href="/pricing" class="nav-link {% if request.endpoint == 'pricing' %}active{% endif %}">Plans</a>
+      {% endif %}
+    </div>
+    <div class="nav-actions">
+      {% if session.get('user_id') %}
+      <div class="user-menu">
+        <button class="user-btn" id="userBtn">
+          <div class="user-avatar">{{ session.username[0]|upper }}</div>
+          <span class="user-name">{{ session.username }}</span>
+          <i class="fas fa-chevron-down fa-xs"></i>
+        </button>
+        <div class="user-dropdown" id="userDropdown">
+          <div class="dropdown-header">
+            <div class="dh-avatar">{{ session.username[0]|upper }}</div>
+            <div>
+              <div class="dh-name">{{ session.username }}</div>
+              <div class="dh-email">{{ session.email }}</div>
+            </div>
+          </div>
+          <a href="/dashboard" class="dropdown-item"><i class="fas fa-chart-line"></i> Dashboard</a>
+          <a href="/pricing" class="dropdown-item"><i class="fas fa-crown"></i> Upgrade Plan</a>
+          <div class="dropdown-divider"></div>
+          <a href="/logout" class="dropdown-item text-danger"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+      </div>
+      {% else %}
+      <a href="/login" class="btn btn-ghost">Login</a>
+      <a href="/signup" class="btn btn-primary">Get Started</a>
+      {% endif %}
+      <button class="nav-toggle" id="navToggle"><i class="fas fa-bars"></i></button>
+    </div>
+  </div>
+</nav>
+
+<!-- TOAST CONTAINER -->
+<div id="toastContainer" class="toast-container"></div>
+
+<!-- FLASH MESSAGES -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    {% for cat, msg in messages %}
+    showToast('{{ msg }}', '{{ cat }}');
+    {% endfor %}
+  });
+</script>
+{% endif %}
+{% endwith %}
+
+{% block content %}{% endblock %}
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="footer-logo"><i class="fas fa-brain"></i> Retail<span>AI</span></div>
+      <p>AI-powered supply & demand prediction for local retail markets. Make smarter inventory decisions.</p>
+    </div>
+    <div class="footer-links">
+      <div class="fl-col">
+        <h4>Product</h4>
+        <a href="/">Home</a>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/pricing">Pricing</a>
+      </div>
+      <div class="fl-col">
+        <h4>Company</h4>
+        <a href="/about">About Us</a>
+        <a href="/contact">Contact</a>
+      </div>
+      <div class="fl-col">
+        <h4>Account</h4>
+        <a href="/signup">Sign Up</a>
+        <a href="/login">Login</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2024 RetailAI. Final Year Project — AI Based Supply & Demand Prediction System.</p>
+  </div>
+</footer>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

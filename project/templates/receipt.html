@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Payment Receipt — RetailAI{% endblock %}
+{% block content %}
+<div class="receipt-page">
+  <div style="width:100%;max-width:520px;">
+    <div class="receipt-box" id="receiptBox">
+      <div class="receipt-header">
+        <div style="width:60px;height:60px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:1.6rem;">✅</div>
+        <h2 style="font-family:'Syne',sans-serif;font-size:1.3rem;margin-bottom:4px;">Payment Successful!</h2>
+        <p style="font-size:0.85rem;opacity:0.85;">Your {{ tx['plan']|capitalize }} plan is now active.</p>
+      </div>
+      <div class="receipt-body">
+        <div style="text-align:center;margin-bottom:24px;">
+          <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:4px;">Receipt Number</div>
+          <div style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:var(--primary-light);">{{ tx['receipt_number'] }}</div>
+        </div>
+        <div class="receipt-row"><span class="rr-label">Transaction ID</span><span class="rr-value" style="font-size:0.82rem;color:var(--cyan);">{{ tx['transaction_id'] }}</span></div>
+        <div class="receipt-row"><span class="rr-label">Customer Name</span><span class="rr-value">{{ user['username'] }}</span></div>
+        <div class="receipt-row"><span class="rr-label">Email</span><span class="rr-value" style="font-size:0.85rem;">{{ user['email'] }}</span></div>
+        <div class="receipt-row"><span class="rr-label">Plan</span><span class="rr-value">{{ tx['plan']|capitalize }} Pro</span></div>
+        <div class="receipt-row"><span class="rr-label">Amount Paid</span><span class="rr-value text-green" style="font-size:1.05rem;">₹{{ "{:,.0f}".format(tx['amount']) }}</span></div>
+        <div class="receipt-row"><span class="rr-label">Currency</span><span class="rr-value">INR (Indian Rupee)</span></div>
+        <div class="receipt-row"><span class="rr-label">Status</span><span class="badge badge-green"><i class="fas fa-check-circle"></i> {{ tx['status']|upper }}</span></div>
+        <div class="receipt-row"><span class="rr-label">Date & Time</span><span class="rr-value" style="font-size:0.85rem;">{{ tx['created_at'][:16] }}</span></div>
+
+        <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:10px;padding:14px;margin-top:16px;font-size:0.82rem;color:var(--text2);line-height:1.6;">
+          <i class="fas fa-info-circle" style="color:var(--green);margin-right:6px;"></i>
+          This is an academic project receipt. No actual payment was processed. For support contact: support@retailai.edu
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px;margin-top:20px;justify-content:center;flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="printReceipt()"><i class="fas fa-print"></i> Print Receipt</button>
+      <a href="/dashboard" class="btn btn-ghost"><i class="fas fa-chart-line"></i> Go to Dashboard</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function printReceipt() {
+  const el = document.getElementById('receiptBox');
+  const win = window.open('', '_blank');
+  win.document.write(`
+    <html><head><title>RetailAI Receipt</title>
+    <style>
+      body { font-family: Arial, sans-serif; max-width: 500px; margin: 30px auto; color: #1e293b; }
+      h2 { text-align: center; color: #6366f1; }
+      .row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
+      .val { font-weight: 600; }
+      .green { color: #10b981; }
+      .header { background: linear-gradient(135deg,#6366f1,#06b6d4); color: white; padding: 24px; text-align: center; border-radius: 8px 8px 0 0; }
+      .body { border: 1px solid #e2e8f0; border-top: none; padding: 24px; border-radius: 0 0 8px 8px; }
+    </style>
+    </head><body>
+    <div class="header"><h2>✅ Payment Receipt</h2><p>RetailAI — Academic Project</p></div>
+    <div class="body">
+      <div class="row"><span>Receipt No.</span><span class="val">{{ tx['receipt_number'] }}</span></div>
+      <div class="row"><span>Transaction ID</span><span class="val" style="font-size:12px;">{{ tx['transaction_id'] }}</span></div>
+      <div class="row"><span>Customer</span><span class="val">{{ user['username'] }}</span></div>
+      <div class="row"><span>Email</span><span class="val">{{ user['email'] }}</span></div>
+      <div class="row"><span>Plan</span><span class="val">{{ tx['plan']|capitalize }} Pro</span></div>
+      <div class="row"><span>Amount</span><span class="val green">₹{{ "{:,.0f}".format(tx['amount']) }}</span></div>
+      <div class="row"><span>Status</span><span class="val green">SUCCESS</span></div>
+      <div class="row"><span>Date</span><span class="val">{{ tx['created_at'][:16] }}</span></div>
+    </div>
+    </body></html>`);
+  win.document.close();
+  win.print();
+}
+</script>
+{% endblock %}

@@ -1,0 +1,61 @@
+product_name,category,month,price,units_sold,promotions,season,demand
+Rice,Groceries,1,45,320,0,Winter,320
+Rice,Groceries,2,45,290,0,Winter,290
+Rice,Groceries,3,47,310,1,Spring,310
+Rice,Groceries,4,47,330,0,Spring,330
+Rice,Groceries,5,48,350,1,Summer,350
+Rice,Groceries,6,48,370,0,Summer,370
+Rice,Groceries,7,50,390,0,Summer,390
+Rice,Groceries,8,50,410,1,Summer,410
+Rice,Groceries,9,48,380,0,Autumn,380
+Rice,Groceries,10,47,360,0,Autumn,360
+Rice,Groceries,11,46,340,1,Winter,340
+Rice,Groceries,12,45,420,0,Winter,420
+Wheat Flour,Groceries,1,35,280,0,Winter,280
+Wheat Flour,Groceries,2,35,260,0,Winter,260
+Wheat Flour,Groceries,3,36,290,1,Spring,290
+Wheat Flour,Groceries,4,36,310,0,Spring,310
+Wheat Flour,Groceries,5,37,320,0,Summer,320
+Wheat Flour,Groceries,6,37,340,1,Summer,340
+Wheat Flour,Groceries,7,38,360,0,Summer,360
+Wheat Flour,Groceries,8,38,380,1,Summer,380
+Wheat Flour,Groceries,9,37,350,0,Autumn,350
+Wheat Flour,Groceries,10,36,330,0,Autumn,330
+Wheat Flour,Groceries,11,35,310,1,Winter,310
+Wheat Flour,Groceries,12,34,390,0,Winter,390
+Sugar,Groceries,1,42,200,0,Winter,200
+Sugar,Groceries,2,42,180,0,Winter,180
+Sugar,Groceries,3,43,210,1,Spring,210
+Sugar,Groceries,4,43,230,0,Spring,230
+Sugar,Groceries,5,44,250,0,Summer,250
+Sugar,Groceries,6,44,270,1,Summer,270
+Sugar,Groceries,7,45,290,0,Summer,290
+Sugar,Groceries,8,45,310,1,Summer,310
+Sugar,Groceries,9,44,280,0,Autumn,280
+Sugar,Groceries,10,43,260,0,Autumn,260
+Sugar,Groceries,11,42,240,1,Winter,240
+Sugar,Groceries,12,41,320,0,Winter,320
+Mobile Phone,Electronics,1,15000,45,0,Winter,45
+Mobile Phone,Electronics,2,15000,38,0,Winter,38
+Mobile Phone,Electronics,3,14500,52,1,Spring,52
+Mobile Phone,Electronics,4,14500,48,0,Spring,48
+Mobile Phone,Electronics,5,14000,55,1,Summer,55
+Mobile Phone,Electronics,6,14000,60,0,Summer,60
+Mobile Phone,Electronics,7,13500,65,0,Summer,65
+Mobile Phone,Electronics,8,13500,70,1,Summer,70
+Mobile Phone,Electronics,9,14000,62,0,Autumn,62
+Mobile Phone,Electronics,10,14500,58,0,Autumn,58
+Mobile Phone,Electronics,11,15000,75,1,Winter,75
+Mobile Phone,Electronics,12,14000,90,0,Winter,90
+T-Shirt,Clothing,1,299,120,0,Winter,120
+T-Shirt,Clothing,2,299,110,0,Winter,110
+T-Shirt,Clothing,3,279,140,1,Spring,140
+T-Shirt,Clothing,4,279,160,0,Spring,160
+T-Shirt,Clothing,5,249,200,1,Summer,200
+T-Shirt,Clothing,6,249,220,0,Summer,220
+T-Shirt,Clothing,7,249,240,0,Summer,240
+T-Shirt,Clothing,8,249,260,1,Summer,260
+T-Shirt,Clothing,9,279,180,0,Autumn,180
+T-Shirt,Clothing,10,299,150,0,Autumn,150
+T-Shirt,Clothing,11,329,130,1,Winter,130
+T-Shirt,Clothing,12,299,170,0,Winter,170

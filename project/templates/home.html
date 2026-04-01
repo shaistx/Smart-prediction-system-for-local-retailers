@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% block title %}RetailAI — AI Supply & Demand Prediction{% endblock %}
+{% block content %}
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid">
+    <div class="hero-content">
+      <div class="hero-badge fade-up"><span class="dot"></span> AI-Powered Retail Intelligence</div>
+      <h1 class="hero-title fade-up delay-1">
+        Predict <span class="accent">Demand.</span><br>
+        Optimize <span class="accent2">Supply.</span><br>
+        Grow Smarter.
+      </h1>
+      <p class="hero-desc fade-up delay-2">
+        Upload your retail data and let our machine learning engine predict future demand, optimize inventory levels, and generate actionable insights — all in seconds.
+      </p>
+      <div class="hero-actions fade-up delay-3">
+        <a href="/signup" class="btn btn-primary btn-lg"><i class="fas fa-rocket"></i> Start Free</a>
+        <a href="#how-it-works" class="btn btn-ghost btn-lg"><i class="fas fa-play-circle"></i> See How It Works</a>
+      </div>
+      <div class="hero-stats fade-up delay-4">
+        <div class="hs-item"><div class="hs-num" data-counter="95">0</div><div class="hs-label">% Accuracy</div></div>
+        <div class="hs-item"><div class="hs-num" data-counter="500">0</div><div class="hs-label">+ Products</div></div>
+        <div class="hs-item"><div class="hs-num" data-counter="3">0</div><div class="hs-label">Free Predictions</div></div>
+      </div>
+    </div>
+    <div class="hero-visual anim-float">
+      <div class="hero-card-main">
+        <div style="font-size:0.8rem;color:var(--text2);margin-bottom:12px;font-weight:600;">📊 Demand Forecast — Q4 2024</div>
+        <div class="chart-placeholder" id="heroBars"></div>
+        <div style="margin-top:16px;display:flex;justify-content:space-between;font-size:0.78rem;color:var(--text3);">
+          <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span>
+        </div>
+      </div>
+      <div class="floating-card fc-top">
+        <div class="fc-label">Predicted Demand</div>
+        <div class="fc-value">+24.8%</div>
+      </div>
+      <div class="floating-card fc-bottom">
+        <div class="fc-label">Model Accuracy</div>
+        <div class="fc-value" style="color:var(--cyan);">R² = 0.94</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section" id="features" style="background:var(--bg2);">
+  <div class="section-inner">
+    <div class="section-header">
+      <div class="section-tag fade-up">Core Features</div>
+      <h2 class="section-title fade-up delay-1">Everything You Need to <br><span style="color:var(--primary-light)">Make Smart Decisions</span></h2>
+      <p class="section-desc fade-up delay-2">From raw CSV data to actionable insights — our platform handles the heavy lifting.</p>
+    </div>
+    <div class="features-grid">
+      {% set features = [
+        ('fa-upload','CSV Data Upload','Upload any retail sales CSV. We auto-detect columns, clean data, and prepare it for ML prediction.'),
+        ('fa-brain','ML Predictions','Linear Regression & Random Forest models give you accurate demand forecasts with confidence scores.'),
+        ('fa-chart-bar','Interactive Charts','Beautiful, real-time charts built with Chart.js. Compare products, visualize trends & predictions.'),
+        ('fa-boxes','Inventory Alerts','Get intelligent stock recommendations: reorder, hold, or reduce based on predicted demand.'),
+        ('fa-shield-alt','Secure & Private','All data is encrypted and private to your account. OTP email verification for security.'),
+        ('fa-crown','Flexible Plans','Start free with 3 predictions. Upgrade to Monthly or Yearly plans for unlimited access.'),
+      ] %}
+      {% for icon, title, desc in features %}
+      <div class="feature-card fade-up delay-{{ loop.index }}">
+        <div class="fc-icon"><i class="fas {{ icon }}"></i></div>
+        <div class="fc-title">{{ title }}</div>
+        <div class="fc-desc">{{ desc }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how-it-works">
+  <div class="section-inner">
+    <div class="section-header">
+      <div class="section-tag fade-up">Process</div>
+      <h2 class="section-title fade-up delay-1">How <span style="color:var(--cyan)">RetailAI</span> Works</h2>
+    </div>
+    <div class="steps-grid">
+      {% set steps = [
+        ('Sign Up','Create your account with email OTP verification.'),
+        ('Upload CSV','Upload your retail sales dataset in CSV format.'),
+        ('Select Product','Choose a product from your dataset to analyze.'),
+        ('Predict','Click Predict and our ML model runs instantly.'),
+        ('Get Insights','View charts, forecasts, and inventory recommendations.'),
+      ] %}
+      {% for title, desc in steps %}
+      <div class="step-card fade-up delay-{{ loop.index }}">
+        <div class="step-num">{{ loop.index }}</div>
+        <div class="step-title">{{ title }}</div>
+        <div class="step-desc">{{ desc }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- DEMO CHART -->
+<section class="section" style="background:var(--bg2);">
+  <div class="section-inner">
+    <div class="section-header">
+      <div class="section-tag">Live Demo</div>
+      <h2 class="section-title">Sample <span style="color:var(--primary-light)">Prediction Charts</span></h2>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <h4 style="margin-bottom:16px;font-size:0.95rem;">📈 Sales vs Predicted Demand</h4>
+        <div class="chart-container"><canvas id="demoChart1"></canvas></div>
+      </div>
+      <div class="card">
+        <h4 style="margin-bottom:16px;font-size:0.95rem;">🥧 Product Category Distribution</h4>
+        <div class="chart-container"><canvas id="demoChart2"></canvas></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section">
+  <div class="section-inner" style="text-align:center;">
+    <div style="background:linear-gradient(135deg,rgba(99,102,241,0.15),rgba(6,182,212,0.08));border:1px solid var(--border);border-radius:24px;padding:60px 40px;">
+      <h2 class="section-title fade-up">Ready to Predict Smarter?</h2>
+      <p class="section-desc fade-up delay-1" style="margin-bottom:32px;">Join hundreds of retailers using AI to stay ahead of demand. Start free — no credit card required.</p>
+      <div class="fade-up delay-2" style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+        <a href="/signup" class="btn btn-primary btn-lg"><i class="fas fa-rocket"></i> Get Started Free</a>
+        <a href="/login" class="btn btn-ghost btn-lg"><i class="fas fa-sign-in-alt"></i> Login</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Hero bar chart
+const heroBars = document.getElementById('heroBars');
+if (heroBars) {
+  const heights = [45, 60, 38, 75, 55, 85, 65, 90, 70, 95];
+  heights.forEach((h, i) => {
+    const bar = document.createElement('div');
+    bar.className = 'chart-bar';
+    bar.style.height = h + '%';
+    bar.style.animationDelay = (i * 0.08) + 's';
+    heroBars.appendChild(bar);
+  });
+}
+
+Chart.defaults.color = '#94a3b8';
+Chart.defaults.borderColor = 'rgba(99,102,241,0.1)';
+
+// Demo Chart 1
+new Chart(document.getElementById('demoChart1'), {
+  type: 'line',
+  data: {
+    labels: ['Week 1','Week 2','Week 3','Week 4','Week 5','Week 6','Week 7','Week 8'],
+    datasets: [
+      { label: 'Actual Sales', data: [120,145,132,168,155,180,172,190], borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.1)', tension: 0.4, fill: true, pointRadius: 4 },
+      { label: 'Predicted', data: [118,148,130,170,158,178,175,195], borderColor: '#06b6d4', borderDash: [6,3], backgroundColor: 'transparent', tension: 0.4, pointRadius: 4 }
+    ]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y: { grid: { color: 'rgba(99,102,241,0.08)' } }, x: { grid: { color: 'rgba(99,102,241,0.08)' } } } }
+});
+
+// Demo Chart 2
+new Chart(document.getElementById('demoChart2'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Electronics','Groceries','Clothing','Home','Sports'],
+    datasets: [{ data: [30, 25, 20, 15, 10], backgroundColor: ['#6366f1','#06b6d4','#10b981','#f59e0b','#ef4444'], borderWidth: 0, hoverOffset: 6 }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } }, cutout: '65%' }
+});
+</script>
+{% endblock %}

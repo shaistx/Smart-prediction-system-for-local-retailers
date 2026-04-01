@@ -1,0 +1,453 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — RetailAI{% endblock %}
+{% block content %}
+<div class="dash-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-inner">
+      <div class="sidebar-user">
+        <div class="su-avatar">{{ user['username'][0]|upper }}</div>
+        <div>
+          <div class="su-name">{{ user['username'] }}</div>
+          <div class="su-plan {% if user['plan'] != 'free' %}paid{% endif %}">
+            {% if user['plan'] == 'free' %}Free Plan{% elif user['plan'] == 'monthly' %}Monthly Pro{% else %}Yearly Pro{% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="sidebar-label">Main</div>
+      <a class="sidebar-link active" href="/dashboard"><i class="fas fa-chart-line"></i> Dashboard</a>
+      <a class="sidebar-link" href="#upload" onclick="scrollToSection('uploadSection')"><i class="fas fa-upload"></i> Upload Data</a>
+      <a class="sidebar-link" href="#predict" onclick="scrollToSection('predictSection')"><i class="fas fa-brain"></i> Predict</a>
+      <div class="sidebar-label" style="margin-top:16px;">Account</div>
+      <a class="sidebar-link" href="/pricing"><i class="fas fa-crown"></i> Upgrade Plan</a>
+      <a class="sidebar-link" href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="dash-main">
+    <button class="btn btn-ghost btn-sm" id="sidebarToggle" style="display:none;margin-bottom:16px;"><i class="fas fa-bars"></i></button>
+
+    <div class="dash-header">
+      <div>
+        <div class="dash-title">Dashboard 👋</div>
+        <div class="dash-sub">Welcome back, {{ user['username'] }}! Let's predict some demand.</div>
+      </div>
+      <div class="flex gap-4">
+        {% if user['plan'] == 'free' %}
+        <a href="/pricing" class="btn btn-primary btn-sm"><i class="fas fa-crown"></i> Upgrade</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- FREE PREDICTION BANNER -->
+    {% if user['plan'] == 'free' %}
+    <div class="limit-banner">
+      <i class="fas fa-info-circle" style="color:var(--yellow);font-size:1.2rem;flex-shrink:0;"></i>
+      <div>
+        <strong>Free Plan:</strong> You have <strong style="color:var(--yellow)">{{ user['free_predictions'] }} prediction(s)</strong> remaining.
+        <a href="/pricing" style="color:var(--primary-light);font-weight:600;margin-left:8px;">Upgrade for unlimited →</a>
+      </div>
+    </div>
+    {% elif user['plan'] in ['monthly','yearly'] %}
+    <div class="limit-banner" style="background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.3);">
+      <i class="fas fa-crown" style="color:var(--green);font-size:1.2rem;flex-shrink:0;"></i>
+      <div><strong>{{ user['plan']|capitalize }} Pro:</strong> Unlimited predictions until {{ user['plan_expiry'][:10] }}</div>
+    </div>
+    {% endif %}
+
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon si-purple"><i class="fas fa-chart-line"></i></div>
+        <div class="stat-info"><div class="stat-value">{{ total_preds }}</div><div class="stat-label">Total Predictions</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon si-cyan"><i class="fas fa-file-csv"></i></div>
+        <div class="stat-info"><div class="stat-value">{{ files|length }}</div><div class="stat-label">Files Uploaded</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon si-green"><i class="fas fa-brain"></i></div>
+        <div class="stat-info">
+          <div class="stat-value">{% if user['plan'] == 'free' %}{{ user['free_predictions'] }}{% else %}∞{% endif %}</div>
+          <div class="stat-label">Predictions Left</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon si-yellow"><i class="fas fa-crown"></i></div>
+        <div class="stat-info"><div class="stat-value">{{ user['plan']|capitalize }}</div><div class="stat-label">Current Plan</div></div>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs-wrapper">
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="tab-upload">📁 Upload & Predict</button>
+        <button class="tab-btn" data-tab="tab-history">📋 History</button>
+        <button class="tab-btn" data-tab="tab-charts">📊 Charts</button>
+      </div>
+
+      <!-- TAB: UPLOAD -->
+      <div class="tab-panel active" id="tab-upload">
+        <div class="grid-2">
+          <!-- UPLOAD SECTION -->
+          <div id="uploadSection">
+            <div class="card mb-6">
+              <h3 style="margin-bottom:18px;font-size:1rem;"><i class="fas fa-upload" style="color:var(--primary-light);margin-right:8px;"></i>Upload CSV Dataset</h3>
+              <div class="upload-zone" id="uploadZone">
+                <input type="file" id="fileInput" accept=".csv">
+                <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                <div class="upload-title">Drop your CSV file here</div>
+                <div class="upload-hint">or <span style="color:var(--primary-light);cursor:pointer;" onclick="document.getElementById('fileInput').click()">click to browse</span></div>
+                <div class="upload-hint" style="margin-top:6px;">Supports retail sales, inventory, and demand datasets</div>
+              </div>
+              <div id="fileInfo" style="display:none;margin-top:14px;" class="card" style="padding:12px;">
+                <div class="flex items-center gap-4">
+                  <i class="fas fa-file-csv" style="color:var(--green);font-size:1.4rem;"></i>
+                  <div>
+                    <div id="fileName" style="font-weight:600;font-size:0.9rem;"></div>
+                    <div id="fileStats" style="font-size:0.78rem;color:var(--text2);"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- PREDICTION SECTION -->
+            <div class="card" id="predictSection">
+              <h3 style="margin-bottom:18px;font-size:1rem;"><i class="fas fa-brain" style="color:var(--cyan);margin-right:8px;"></i>Run Prediction</h3>
+              <div class="form-group">
+                <label class="form-label">Product Column</label>
+                <select class="form-control" id="productColSelect">
+                  <option value="">— Upload file first —</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Select Product</label>
+                <select class="form-control" id="productSelect">
+                  <option value="">— Select product —</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Sales/Demand Column</label>
+                <select class="form-control" id="salesColSelect">
+                  <option value="">— Auto detect —</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">ML Model</label>
+                <select class="form-control" id="modelSelect">
+                  <option value="random_forest">🌳 Random Forest (Recommended)</option>
+                  <option value="linear">📈 Linear Regression</option>
+                </select>
+              </div>
+              <button class="btn btn-primary btn-full" id="predictBtn" {% if not can_predict %}disabled{% endif %}>
+                <i class="fas fa-magic"></i> Run Prediction
+              </button>
+              {% if not can_predict %}
+              <div style="text-align:center;margin-top:10px;font-size:0.82rem;color:var(--text3);">
+                No free predictions left. <a href="/pricing" class="text-primary">Upgrade your plan →</a>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- RESULTS SECTION -->
+          <div>
+            <div id="predResult" style="display:none;">
+              <div class="pred-result">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                  <h3 style="font-size:1rem;"><i class="fas fa-chart-bar" style="color:var(--primary-light);margin-right:8px;"></i>Prediction Result</h3>
+                  <span class="badge badge-green"><i class="fas fa-check-circle"></i> Complete</span>
+                </div>
+                <div style="text-align:center;margin-bottom:20px;">
+                  <div style="font-size:0.82rem;color:var(--text2);margin-bottom:4px;">Predicted Demand (Next Period)</div>
+                  <div class="pred-value" id="predValue">—</div>
+                  <div style="font-size:0.82rem;color:var(--text2);">units</div>
+                </div>
+                <div class="grid-3" style="margin-bottom:18px;">
+                  <div style="text-align:center;padding:12px;background:var(--bg3);border-radius:10px;">
+                    <div style="font-size:0.7rem;color:var(--text3);">Mean Demand</div>
+                    <div style="font-weight:700;" id="meanVal">—</div>
+                  </div>
+                  <div style="text-align:center;padding:12px;background:var(--bg3);border-radius:10px;">
+                    <div style="font-size:0.7rem;color:var(--text3);">R² Score</div>
+                    <div style="font-weight:700;color:var(--cyan);" id="r2Val">—</div>
+                  </div>
+                  <div style="text-align:center;padding:12px;background:var(--bg3);border-radius:10px;">
+                    <div style="font-size:0.7rem;color:var(--text3);">MAE</div>
+                    <div style="font-weight:700;color:var(--yellow);" id="maeVal">—</div>
+                  </div>
+                </div>
+                <div id="recommendationBox" class="rec-card" style="margin-bottom:18px;">
+                  <span id="recIcon" style="font-size:1.5rem;"></span>
+                  <div><div style="font-weight:600;font-size:0.88rem;margin-bottom:2px;" id="recTitle">—</div><div style="font-size:0.82rem;color:var(--text2);" id="recText">—</div></div>
+                </div>
+                <div class="chart-container">
+                  <canvas id="predChart"></canvas>
+                </div>
+              </div>
+            </div>
+            <div id="resultPlaceholder">
+              <div style="text-align:center;padding:60px 20px;color:var(--text3);">
+                <i class="fas fa-chart-area" style="font-size:3rem;margin-bottom:16px;opacity:0.3;"></i>
+                <div>Upload a CSV and run prediction to see results here</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DATA TABLE -->
+        <div id="dataTableSection" style="display:none;margin-top:24px;">
+          <div class="card">
+            <div class="flex items-center justify-between mb-6">
+              <h3 style="font-size:1rem;"><i class="fas fa-table" style="color:var(--yellow);margin-right:8px;"></i>Dataset Preview</h3>
+              <span class="badge badge-cyan" id="tableStats"></span>
+            </div>
+            <div class="table-wrap">
+              <table class="data-table" id="dataTable">
+                <thead id="tableHead"></thead>
+                <tbody id="tableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: HISTORY -->
+      <div class="tab-panel" id="tab-history">
+        <div class="card">
+          <h3 style="margin-bottom:18px;font-size:1rem;"><i class="fas fa-history" style="color:var(--primary-light);margin-right:8px;"></i>Prediction History</h3>
+          {% if predictions %}
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>#</th><th>Product</th><th>Predicted Demand</th><th>Model</th><th>Confidence</th><th>Date</th></tr></thead>
+              <tbody>
+                {% for p in predictions %}
+                <tr>
+                  <td style="color:var(--text3);">{{ loop.index }}</td>
+                  <td><strong>{{ p['product'] }}</strong></td>
+                  <td><span class="text-cyan fw-bold">{{ p['predicted_demand'] }}</span></td>
+                  <td><span class="badge badge-purple">{{ p['model_used']|replace('_',' ')|title }}</span></td>
+                  <td>
+                    <span class="badge {% if p['confidence'] >= 70 %}badge-green{% elif p['confidence'] >= 40 %}badge-yellow{% else %}badge-red{% endif %}">
+                      {{ p['confidence'] }}%
+                    </span>
+                  </td>
+                  <td style="color:var(--text3);font-size:0.82rem;">{{ p['created_at'][:16] }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div style="text-align:center;padding:40px;color:var(--text3);">
+            <i class="fas fa-inbox" style="font-size:2.5rem;margin-bottom:12px;opacity:0.3;"></i>
+            <div>No predictions yet. Upload a file and run your first prediction!</div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- TAB: CHARTS -->
+      <div class="tab-panel" id="tab-charts">
+        <div class="grid-2">
+          <div class="card">
+            <h4 style="margin-bottom:16px;font-size:0.95rem;">📊 My Prediction History</h4>
+            <div class="chart-container"><canvas id="historyChart"></canvas></div>
+          </div>
+          <div class="card">
+            <h4 style="margin-bottom:16px;font-size:0.95rem;">🎯 Demand Comparison</h4>
+            <div class="chart-container"><canvas id="compChart"></canvas></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+Chart.defaults.color = '#94a3b8';
+Chart.defaults.borderColor = 'rgba(99,102,241,0.1)';
+
+let predChart = null;
+let currentColumns = [];
+
+// File upload
+const uploadZone = document.getElementById('uploadZone');
+const fileInput = document.getElementById('fileInput');
+
+uploadZone.addEventListener('click', () => fileInput.click());
+uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop', (e) => {
+  e.preventDefault(); uploadZone.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) handleFileUpload(file);
+});
+fileInput.addEventListener('change', () => { if (fileInput.files[0]) handleFileUpload(fileInput.files[0]); });
+
+async function handleFileUpload(file) {
+  if (!file.name.endsWith('.csv')) { showToast('Please upload a CSV file!', 'error'); return; }
+  showLoading('Uploading and parsing CSV...');
+  const fd = new FormData();
+  fd.append('file', file);
+  try {
+    const res = await fetch('/upload-csv', { method:'POST', body: fd });
+    const data = await res.json();
+    hideLoading();
+    if (data.success) {
+      showToast(data.message, 'success');
+      document.getElementById('fileInfo').style.display = 'block';
+      document.getElementById('fileName').textContent = file.name;
+      document.getElementById('fileStats').textContent = `${data.rows} rows × ${data.cols} columns`;
+      currentColumns = data.columns;
+      // Populate column selects
+      populateSelect('productColSelect', data.columns, data.product_col, '— Select product column —');
+      populateSelect('salesColSelect', data.columns, null, '— Auto detect —');
+      if (data.products.length > 0) populateSelect('productSelect', data.products, null, '— Select product —');
+      // Show table
+      renderTable(data.preview, data.columns);
+      document.getElementById('dataTableSection').style.display = 'block';
+      document.getElementById('tableStats').textContent = `${data.rows} rows, ${data.cols} cols`;
+    } else {
+      showToast(data.message, 'error');
+    }
+  } catch (err) { hideLoading(); showToast('Upload failed!', 'error'); }
+}
+
+function populateSelect(id, items, selected, placeholder) {
+  const sel = document.getElementById(id);
+  sel.innerHTML = `<option value="">${placeholder}</option>`;
+  items.forEach(item => {
+    const opt = document.createElement('option');
+    opt.value = item; opt.textContent = item;
+    if (selected && item === selected) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+function renderTable(data, columns) {
+  const head = document.getElementById('tableHead');
+  const body = document.getElementById('tableBody');
+  head.innerHTML = '<tr>' + columns.map(c => `<th>${c}</th>`).join('') + '</tr>';
+  body.innerHTML = data.map(row => '<tr>' + columns.map(c => `<td>${row[c] ?? ''}</td>`).join('') + '</tr>').join('');
+}
+
+// Product col change → reload products
+document.getElementById('productColSelect').addEventListener('change', async function() {
+  const col = this.value;
+  if (!col) return;
+  const res = await fetch('/get-products', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({product_col: col}) });
+  const data = await res.json();
+  if (data.success) populateSelect('productSelect', data.products, null, '— Select product —');
+});
+
+// PREDICT
+document.getElementById('predictBtn').addEventListener('click', async () => {
+  const product = document.getElementById('productSelect').value;
+  const productCol = document.getElementById('productColSelect').value;
+  const salesCol = document.getElementById('salesColSelect').value;
+  const modelType = document.getElementById('modelSelect').value;
+  showLoading('Running ML prediction...');
+  try {
+    const res = await fetch('/predict', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ product, product_col: productCol, sales_col: salesCol, model_type: modelType })
+    });
+    const data = await res.json();
+    hideLoading();
+    if (data.success === false && data.message === 'limit') {
+      showToast('Free predictions used up! Please upgrade.', 'warning');
+      setTimeout(() => window.location.href = '/pricing', 2000);
+      return;
+    }
+    if (data.success) {
+      showToast(data.message, 'success');
+      showResults(data);
+      if (data.remaining_predictions !== 'unlimited') {
+        document.querySelector('.limit-banner strong')?.parentElement && 
+          (document.querySelectorAll('.limit-banner strong')[1].textContent = data.remaining_predictions + ' prediction(s)');
+      }
+    } else {
+      showToast(data.message, 'error');
+    }
+  } catch(err) { hideLoading(); showToast('Prediction failed!', 'error'); }
+});
+
+function showResults(data) {
+  document.getElementById('resultPlaceholder').style.display = 'none';
+  document.getElementById('predResult').style.display = 'block';
+  document.getElementById('predValue').textContent = data.predicted_demand.toLocaleString();
+  document.getElementById('meanVal').textContent = data.mean_demand;
+  document.getElementById('r2Val').textContent = data.r2 + '%';
+  document.getElementById('maeVal').textContent = data.mae;
+  // Recommendation
+  const rec = data.recommendation;
+  const box = document.getElementById('recommendationBox');
+  box.className = `rec-card rec-${rec.color}`;
+  document.getElementById('recIcon').textContent = rec.icon;
+  document.getElementById('recTitle').textContent = rec.level.replace('-',' ').toUpperCase() + ' DEMAND';
+  document.getElementById('recText').textContent = rec.text;
+  // Chart
+  if (predChart) predChart.destroy();
+  predChart = new Chart(document.getElementById('predChart'), {
+    type: 'line',
+    data: {
+      labels: data.labels,
+      datasets: [
+        { label: 'Actual', data: data.historical, borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.1)', tension: 0.4, fill: true, pointRadius: 3 },
+        { label: 'Predicted', data: data.predicted, borderColor: '#06b6d4', borderDash: [5,3], backgroundColor: 'transparent', tension: 0.4, pointRadius: 3 }
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } },
+      scales: { y: { grid: { color: 'rgba(99,102,241,0.08)' } }, x: { grid: { color: 'rgba(99,102,241,0.08)' } } } }
+  });
+  // Update history chart
+  loadHistoryChart();
+}
+
+// History charts
+async function loadHistoryChart() {
+  try {
+    const res = await fetch('/api/dashboard-stats');
+    const data = await res.json();
+    if (!data.labels) return;
+    const ctx1 = document.getElementById('historyChart');
+    const ctx2 = document.getElementById('compChart');
+    if (ctx1._chartInstance) ctx1._chartInstance.destroy();
+    ctx1._chartInstance = new Chart(ctx1, {
+      type: 'bar',
+      data: { labels: data.labels, datasets: [{ label: 'Predicted Demand', data: data.values, backgroundColor: 'rgba(99,102,241,0.7)', borderColor: '#6366f1', borderWidth: 1, borderRadius: 6 }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } },
+        scales: { y: { grid: { color: 'rgba(99,102,241,0.08)' } }, x: { grid: { display: false } } } }
+    });
+    if (ctx2._chartInstance) ctx2._chartInstance.destroy();
+    ctx2._chartInstance = new Chart(ctx2, {
+      type: 'radar',
+      data: { labels: data.labels.slice(0, 6), datasets: [{ label: 'Demand', data: data.values.slice(0, 6), borderColor: '#06b6d4', backgroundColor: 'rgba(6,182,212,0.15)', pointRadius: 4 }] },
+      options: { responsive: true, maintainAspectRatio: false,
+        scales: { r: { grid: { color: 'rgba(99,102,241,0.1)' }, ticks: { display: false } } } }
+    });
+  } catch(e) {}
+}
+
+loadHistoryChart();
+
+function scrollToSection(id) { document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' }); }
+
+// Tab switching
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab)?.classList.add('active');
+    if (btn.dataset.tab === 'tab-charts') loadHistoryChart();
+  });
+});
+</script>
+{% endblock %}

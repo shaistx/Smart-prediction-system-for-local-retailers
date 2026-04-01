@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Contact Us — RetailAI{% endblock %}
+{% block content %}
+<div style="padding:100px 24px 60px;min-height:100vh;">
+  <div style="max-width:1100px;margin:auto;">
+    <div class="section-header">
+      <div class="section-tag">Contact Us</div>
+      <h1 class="section-title">Get In <span style="color:var(--primary-light)">Touch</span></h1>
+      <p class="section-desc">Have questions about the project? We'd love to hear from you.</p>
+    </div>
+
+    <div class="contact-layout">
+      <!-- FORM -->
+      <div class="card">
+        <h3 style="margin-bottom:24px;font-size:1.1rem;"><i class="fas fa-paper-plane" style="color:var(--primary-light);margin-right:8px;"></i>Send us a Message</h3>
+        <form id="contactForm">
+          <div class="form-group">
+            <label class="form-label">Your Name</label>
+            <div class="input-group">
+              <i class="fas fa-user input-icon"></i>
+              <input type="text" name="name" class="form-control" placeholder="John Doe" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <div class="input-group">
+              <i class="fas fa-envelope input-icon"></i>
+              <input type="email" name="email" class="form-control" placeholder="you@example.com" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Message</label>
+            <textarea name="message" class="form-control" rows="5" placeholder="Tell us about your query..." required style="resize:vertical;"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary btn-full" id="contactBtn">
+            <i class="fas fa-paper-plane"></i> Send Message
+          </button>
+        </form>
+      </div>
+
+      <!-- INFO -->
+      <div>
+        <div class="card mb-4">
+          <h3 style="margin-bottom:20px;font-size:1rem;">📍 Project Information</h3>
+          {% for item in [
+            ('fa-graduation-cap','Project Type','Final Year Computer Science Project'),
+            ('fa-university','Department','Computer Science & Engineering'),
+            ('fa-brain','Domain','Artificial Intelligence & Machine Learning'),
+            ('fa-calendar','Year','2024-2025'),
+          ] %}
+          <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:18px;">
+            <div style="width:38px;height:38px;background:rgba(99,102,241,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i class="fas {{ item[0] }}" style="color:var(--primary-light);font-size:0.9rem;"></i>
+            </div>
+            <div>
+              <div style="font-size:0.78rem;color:var(--text3);">{{ item[1] }}</div>
+              <div style="font-size:0.9rem;font-weight:600;">{{ item[2] }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="card">
+          <h3 style="margin-bottom:16px;font-size:1rem;">🚀 Quick Links</h3>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <a href="/about" class="btn btn-ghost btn-sm" style="justify-content:flex-start;gap:10px;"><i class="fas fa-info-circle"></i> About the Project</a>
+            <a href="/signup" class="btn btn-primary btn-sm" style="justify-content:flex-start;gap:10px;"><i class="fas fa-rocket"></i> Get Started Free</a>
+            <a href="/pricing" class="btn btn-ghost btn-sm" style="justify-content:flex-start;gap:10px;"><i class="fas fa-crown"></i> View Plans</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.getElementById('contactForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('contactBtn');
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+  const fd = new FormData(e.target);
+  try {
+    const res = await fetch('/contact', { method:'POST', body: fd });
+    const data = await res.json();
+    if (data.success) {
+      showToast(data.message, 'success');
+      e.target.reset();
+    } else {
+      showToast(data.message, 'error');
+    }
+  } catch { showToast('Something went wrong!', 'error'); }
+  btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Message';
+});
+</script>
+{% endblock %}
