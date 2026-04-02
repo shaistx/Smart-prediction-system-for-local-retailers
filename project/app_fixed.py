@@ -172,8 +172,8 @@ def signup():
         conn.commit()
         conn.close()
         print(f"🔸 Simulated SMS to {phone}: {otp}")
-        print("💬 Enter the OTP in the app to verify.")
-        return jsonify({'success': True, 'message': 'OTP sent to your phone! Check console or enter below.', 'phone': phone})
+        print("💬 OTP auto-filled in browser!")
+        return jsonify({'success': True, 'message': 'OTP sent to your phone! Check console or enter below.', 'phone': phone, 'otp': otp})
     return render_template('signup.html')
 
 @app.route('/verify-otp', methods=['POST'])

@@ -109,6 +109,8 @@ document.getElementById('signupForm').addEventListener('submit', async (e) => {
       document.getElementById('otpReveal').style.display = 'block';
       if (data.otp) {
         otpInputs.forEach((input, idx) => { input.value = data.otp[idx] || ''; });
+        otpInputs[5].focus(); // Auto-focus last digit
+        showToast('OTP auto-filled! Click Verify or press Enter.', 'success');
       }
       startTimer();
       otpInputs[0].focus();
